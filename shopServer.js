@@ -63,6 +63,7 @@ app.get("/purchases/:filterby/:id",function(req,res){
     })
 })
 
+
 app.get("/totalPurchase/:filterby/:id",function(req,res){
     const filterby = req.params.filterby;
     const id = +req.params.id;
@@ -71,18 +72,31 @@ app.get("/totalPurchase/:filterby/:id",function(req,res){
         else{
             let shopData = JSON.parse(data);
             let count;
+            let filterdata = [];
             purchasedata = shopData.purchases.map(p=>({shopId: p.shopId,productid: p.productid,quantity: p.quantity,price: p.price}));
             if(filterby=="shop"){
-                // purchasedata = purchasedata.filter(p=>p.shopId==id)
-                count = purchasedata.reduce((acc,curr)=>(curr.shopId==id?acc+curr.quantity:acc),0)
-
+                purchasedata = purchasedata.filter(p=>p.shopId==id)
+                for(let i=0;i<purchasedata.length;i++){
+                    let exist = filterdata.find(f=>f.productid==purchasedata[i].productid);
+                    if(!exist){
+                        let quantity = purchasedata.reduce((acc,curr)=>(curr.productid==purchasedata[i].productid?acc+curr.quantity:acc),0)
+                        filterdata.push({productid:purchasedata[i].productid,quantity:quantity})
+                    }
+                }
             }
             if(filterby=="product"){
-                count = purchasedata.reduce((acc,curr)=>(curr.productid==id?acc+curr.quantity:acc),0)
+                purchasedata = purchasedata.filter(p=>p.productid==id)
+                for(let i=0;i<purchasedata.length;i++){
+                    let exist = filterdata.find(f=>f.shopId==purchasedata[i].shopId);
+                    if(!exist){
+                        let quantity = purchasedata.reduce((acc,curr)=>(curr.shopId==purchasedata[i].shopId?acc+curr.quantity:acc),0);
+                        filterdata.push({shopId:purchasedata[i].shopId,quantity:quantity})
+                    }
+                }
             }
-            count = JSON.stringify(count);
-            console.log(count);
-            res.send(count);
+            count = JSON.stringify(filterdata);
+            console.log(filterdata);
+            res.send(filterdata);
         }
     })
 })
@@ -224,121 +238,3 @@ app.put("/products/:id", function(req, res) {
       }
     });
   });
-  
-/*
-app.put("/svr/students/:id",function(req,res){
-    let body = req.body;
-    let id = +req.params.id;
-    fs.readFile(fname,"utf8",function(err,data){
-        if(err) res.status(404).send(err);
-        else{
-            let studentsArray = JSON.parse(data);
-            let index = studentsArray.findIndex(st=>st.id===id);
-            if(index>=0){
-                let updatedStudent = {...studentsArray[index],...body};
-                studentsArray[index]=updatedStudent;
-                let data1 = JSON.stringify(studentsArray);
-                fs.writeFile(fname,data1,function(err){
-                    if(err) res.status(404).send(err);
-                    else res.send(updatedStudent);
-                })
-            }
-            else res.status(404).send("No Student found")
-        }
-    })
-})
-
-app.post("/svr/students",function(req,res){
-    let body = req.body;
-    fs.readFile(fname,"utf8",function(err,data){
-        if(err) res.status(404).send(err);
-        else{
-            let studentsArray = JSON.parse(data);
-            let maxid = studentsArray.reduce((acc,curr)=>(curr.id>acc?curr.id:acc),0);
-            let newid = maxid + 1;
-            let newStudent = {...body,id:newid};
-            studentsArray.push(newStudent);
-            let data1 = JSON.stringify(studentsArray);
-            fs.writeFile(fname,data1,function(err){
-                if(err) res.status(404).send(err);
-                else res.send(newStudent);
-            })
-
-        }
-    })
-})
-
-
-
-
-
-
-app.get("/svr/resetData",function(req,res){
-    let data = JSON.stringify(shopData);
-    fs.writeFile(fname,data,function(err){
-        if(err) res.status(404).send(err);
-        else res.send("Data in file is reset");
-    })
-})
-
-app.get("/svr/students",function(req,res){
-    // res.send(shopData); // this is another approach to read the data from server without using readFile made by Sachin Pal...
-    fs.readFile(fname,"utf8",function(err,data){
-        if(err) res.status(404).send(err);
-        else{
-            let stundetsArray = JSON.parse(data);
-            res.send(stundetsArray);
-        }
-    })
-})
-
-app.get("/svr/students/:id",function(req,res){
-    let id = +req.params.id;
-    fs.readFile(fname,"utf8",function(err,data){
-        if(err) res.status(404).send(err);
-        else{
-            let stundetsArray = JSON.parse(data);
-            let student = stundetsArray.find(st=>st.id==id);
-            if(student) res.send(student);
-            else res.status(404).send("No Student Found");
-        }
-    })
-})
-
-app.get("/svr/students/course/:name",function(req,res){
-    let name = req.params.name;
-    fs.readFile(fname,"utf8",function(err,data){
-        if(err) res.status(404).send(err);
-        else{
-            let stundetsArray = JSON.parse(data);
-            let arr1 = stundetsArray.filter(st=>st.course===name);
-            res.send(arr1);
-        }
-    })
-})
-
-
-
-
-
-app.delete("/svr/students/:id",function(req,res){
-    let id = +req.params.id;
-    fs.readFile(fname,"utf8",function(err,data){
-        if(err) res.status(404).send(err);
-        else{
-            let studentsArray = JSON.parse(data);
-            let index = studentsArray.findIndex(st=>st.id===id);
-            if(index>=0){
-                let deletedStudent = studentsArray.splice(index,1);
-                let data1 = JSON.stringify(studentsArray);
-                fs.writeFile(fname,data1,function(err){
-                    if(err) res.status(404).send(err);
-                    else res.send(deletedStudent);
-                })
-            }
-            else res.status(404).send("No Student found")
-        }
-    })
-})
-
-*/
