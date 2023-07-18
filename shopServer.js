@@ -106,7 +106,7 @@ app.get("/totalPurchase/:filterby/:id",function(req,res){
 //GET /purchases - to get the shopId, productid, quantity, price of all the purchases AND,
 //GET /purchases?shop=st1&product=pr1&sort=QtyAsc,QtyDesc,ValueAsc,ValueDesc
 app.get("/purchases",function(req,res){
-    const {shop="", product="", sort=""} = req.query;
+    const {shop="", product=[], sort=""} = req.query;
     // console.log(shop,product,sort);
     fs.readFile(fname,"utf8",function(err,data){
         if(err) res.status(404).send(err);
@@ -117,7 +117,7 @@ app.get("/purchases",function(req,res){
                 purchasedata = purchasedata.filter(p=>p.shopId==shop);
             }
             if(product){
-                purchasedata = purchasedata.filter(p=>p.productid==product);
+                purchasedata = purchasedata.filter(p=>product.includes(p.productid));
             }
             if(sort=="QtyAsc"){
                 purchasedata.sort((n1,n2)=>n1.quantity-n2.quantity);
