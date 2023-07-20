@@ -107,7 +107,6 @@ app.get("/totalPurchase/:filterby/:id",function(req,res){
 //GET /purchases?shop=st1&product=pr1&sort=QtyAsc,QtyDesc,ValueAsc,ValueDesc
 app.get("/purchases",function(req,res){
     const {shop="", product=[], sort=""} = req.query;
-    // console.log(shop,product,sort);
     fs.readFile(fname,"utf8",function(err,data){
         if(err) res.status(404).send(err);
         else{
@@ -116,7 +115,7 @@ app.get("/purchases",function(req,res){
             if(shop){
                 purchasedata = purchasedata.filter(p=>p.shopId==shop);
             }
-            if(product){
+            if(product.length>0){
                 purchasedata = purchasedata.filter(p=>product.includes(p.productid));
             }
             if(sort=="QtyAsc"){
@@ -131,6 +130,7 @@ app.get("/purchases",function(req,res){
             if(sort=="ValueDesc"){
                 purchasedata.sort((n1,n2)=>(n2.quantity*n2.price)-(n1.quantity*n1.price));
             }
+            console.log("PURCHAESE DATA",purchasedata);
             res.send(purchasedata);
         }
     })
